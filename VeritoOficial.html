@@ -3,9 +3,11 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Mi Tienda de Tejidos</title>
-    <script src="https://cdn.jsdelivr.net/npm/@tailwindcss/browser@4"></script>
-    <script src="https://unpkg.com/vue@3/dist/vue.global.js"></script>
+    <title>Mi Coyita</title>
+ <script src="https://cdn.jsdelivr.net/npm/@tailwindcss/browser@4"></script>
+<script src="https://unpkg.com/vue@3/dist/vue.global.js"></script>
+
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Fredoka:wght@300..700&display=swap" rel="stylesheet">
@@ -185,13 +187,71 @@
     </footer>
 
     <script>
-        const { createApp, ref, watch } = Vue;
+const SUPABASE_URL = "https://uifoumlzrnsfylvjnuvo.supabase.co/rest/v1/";
+const SUPABASE_KEY = "sb_publishable_ej-kBfEuFLBVqgXg5uOGoQ_gN1w6A4R";
+const supabase = supabase.createClient(https://uifoumlzrnsfylvjnuvo.supabase.co/rest/v1/, sb_publishable_ej-kBfEuFLBVqgXg5uOGoQ_gN1w6A4R);
+
+const { createApp, ref, onMounted } = Vue;
+
+createApp({
+    setup() {
+        const productos = ref([]);
+        const nuevoNombre = ref('');
+        const nuevoPrecio = ref('');
+        const nuevaImagen = ref('');
+
+        // 2. FUNCIÓN PARA TRAER LOS PRODUCTOS DESDE INTERNET
+        const obtenerProductos = async () => {
+            const { data, error } = await supabase
+                .from('productos')
+                .select('*');
+            if (error) console.error(error);
+            else productos.value = data;
+        };
+
+        // 3. FUNCIÓN PARA GUARDAR UN PRODUCTO NUEVO
+        const agregarProducto = async () => {
+            if (!nuevoNombre.value || !nuevoPrecio.value) return;
+
+            const { error } = await supabase
+                .from('productos')
+                .insert([{ 
+                    nombre: nuevoNombre.value, 
+                    precio: parseInt(nuevoPrecio.value), 
+                    imagen_url: nuevaImagen.value 
+                }]);
+
+            if (error) {
+                console.error(error);
+            } else {
+                // Limpiar el formulario y recargar la lista
+                nuevoNombre.value = '';
+                nuevoPrecio.value = '';
+                nuevaImagen.value = '';
+                await obtenerProductos();
+            }
+        };
+
+        // Cargar los productos automáticamente cuando se abra la web en cualquier celular
+        onMounted(() => {
+            obtenerProductos();
+        });
+
+        return {
+            productos,
+            nuevoNombre,
+            nuevoPrecio,
+            nuevaImagen,
+            agregarProducto
+        }
+    }
+}).mount('#app')
 
         createApp({
             setup() {
                 // Configuración inicial por defecto
                 const defaultConfig = {
-                    siteTitle: 'Tina Tejidos Inspiración',
+                    siteTitle: 'Cambia el nombre',
                     primaryColor: '#ff8da1', // Rosa pastel vívido
                     bgColor: '#ffeef2',      // Fondo pastel muy claro
                     profilePic: 'https://images.unsplash.com/photo-1584942368913-b98aa9869278?w=400', // Foto ilustrativa crochet
